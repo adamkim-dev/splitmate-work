@@ -3,12 +3,12 @@ import debtService from '@/app/services/debtService';
 import { CreateDebtPayload } from '@/app/models';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: Partial<CreateDebtPayload> = await request.json();
 
     if (body.creditor !== undefined && typeof body.creditor !== 'string') {
@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await debtService.deleteDebt(id);
 
     if (response.error) {

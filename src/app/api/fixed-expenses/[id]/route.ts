@@ -3,12 +3,12 @@ import fixedExpenseService from '@/app/services/fixedExpenseService';
 import { CreateFixedExpensePayload } from '@/app/models';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await fixedExpenseService.fetchFixedExpenseById(id);
 
     if (response.error) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: Partial<CreateFixedExpensePayload> = await request.json();
 
     if (body.name !== undefined && typeof body.name !== 'string') {
@@ -73,7 +73,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await fixedExpenseService.deleteFixedExpense(id);
 
     if (response.error) {

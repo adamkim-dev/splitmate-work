@@ -3,12 +3,12 @@ import loanService from '@/app/services/loanService';
 import { CreateLoanPayload } from '@/app/models';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: Partial<CreateLoanPayload> = await request.json();
 
     if (body.borrower !== undefined && typeof body.borrower !== 'string') {
@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await loanService.deleteLoan(id);
 
     if (response.error) {

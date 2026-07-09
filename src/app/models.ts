@@ -53,8 +53,8 @@ export interface Trip {
   id: string;
   name: string;
   date: string;
-  participants: TripParticipant[];
-  payers: TripPayer[];
+  tripParticipants: TripParticipant[];
+  tripPayers: TripPayer[];
   status: TripStatus;
   totalMoney: number;
   moneyPerUser: number;

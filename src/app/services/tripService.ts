@@ -1,25 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SplitSBClient } from "../utils/supabase/SplitSBClient";
-import { Activity, Trip } from "../models";
+import { Trip } from "../models";
 import { IBaseResponse } from "../model/common.model";
 
-export class TripService extends SplitSBClient {
-  constructor() {
-    super();
-  }
+export class TripService {
+  private baseUrl = "/api/trips";
 
   fetchAllTrips = async (): Promise<IBaseResponse<Trip[]>> => {
     try {
-      const { data, error } = await this.client.from("trips").select("*");
-
-      if (error) {
-        return { data: null, error: error };
-      }
-
-      return {
-        data: this.toCamelCase(data),
-        error: null,
-      };
+      const res = await fetch(this.baseUrl, { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) return { data: null, error: json.error };
+      return { data: json.data, error: null };
     } catch (error: any) {
       return { data: null, error };
     }
@@ -27,47 +18,10 @@ export class TripService extends SplitSBClient {
 
   fetchTripById = async (id: string): Promise<IBaseResponse<Trip>> => {
     try {
-      const { data, error } = await this.client
-        .from("trips")
-        .select(
-          `
-        *,
-        trip_participants(*),
-        activities(*),
-        trip_payers(*)
-      `
-        )
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        return { data: null, error: error };
-      }
-
-      const formattedActivities = data.activities
-        ? data.activities.map((activity: Activity) => ({
-            ...this.toCamelCase(activity),
-            participants: activity.activityParticipants
-              ? activity.activityParticipants.map((participant: any) => ({
-                  ...this.toCamelCase(participant),
-                  totalMoneyPerUser: participant.total_money_per_user || 0,
-                }))
-              : [],
-          }))
-        : [];
-
-      const formattedData = {
-        ...this.toCamelCase(data),
-        participants: data.trip_participants
-          ? this.toCamelCase(data.trip_participants)
-          : [],
-        activities: formattedActivities,
-      };
-
-      return {
-        data: formattedData,
-        error: null,
-      };
+      const res = await fetch(`${this.baseUrl}/${id}`, { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) return { data: null, error: json.error };
+      return { data: json.data, error: null };
     } catch (error: any) {
       return { data: null, error };
     }
@@ -75,51 +29,14 @@ export class TripService extends SplitSBClient {
 
   createTrip = async (trip: Omit<Trip, "id">): Promise<IBaseResponse<Trip>> => {
     try {
-      const { participants, ...tripData } = trip;
-
-      const snakeCaseTripData = {
-        name: tripData.name,
-        date: tripData.date,
-        status: tripData.status,
-        total_money: tripData.totalMoney || 0,
-        money_per_user: tripData.moneyPerUser || 0,
-      };
-
-      // Tạo trip trước
-      const { data, error } = await this.client
-        .from("trips")
-        .insert(snakeCaseTripData)
-        .select()
-        .single();
-
-      if (error) {
-        return { data: null, error: error };
-      }
-
-      // Nếu có participants, thêm vào bảng trip_participants
-      if (participants && participants.length > 0) {
-        const tripParticipants = participants.map((p) => ({
-          trip_id: data.id,
-          user_id: p.userId,
-          is_paid: p.isPaid || false,
-          total_money_per_user: p.totalMoneyPerUser || 0,
-          paid_amount: p.paidAmount || 0,
-        }));
-
-        const { error: participantsError } = await this.client
-          .from("trip_participants")
-          .insert(tripParticipants);
-
-        if (participantsError) {
-          console.error("Error adding participants:", participantsError);
-          // Không xóa trip đã tạo, chỉ ghi log lỗi
-        }
-      }
-
-      return {
-        data: this.toCamelCase(data),
-        error: null,
-      };
+      const res = await fetch(this.baseUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trip),
+      });
+      const json = await res.json();
+      if (!res.ok) return { data: null, error: json.error };
+      return { data: json.data, error: null };
     } catch (error: any) {
       return { data: null, error };
     }
@@ -130,21 +47,14 @@ export class TripService extends SplitSBClient {
     trip: Partial<Trip>
   ): Promise<IBaseResponse<Trip>> => {
     try {
-      const { data, error } = await this.client
-        .from("trips")
-        .update(trip)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) {
-        return { data: null, error: error };
-      }
-
-      return {
-        data: this.toCamelCase(data),
-        error: null,
-      };
+      const res = await fetch(`${this.baseUrl}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trip),
+      });
+      const json = await res.json();
+      if (!res.ok) return { data: null, error: json.error };
+      return { data: json.data, error: null };
     } catch (error: any) {
       return { data: null, error };
     }
@@ -152,23 +62,16 @@ export class TripService extends SplitSBClient {
 
   deleteTrip = async (id: string): Promise<IBaseResponse<null>> => {
     try {
-      const { error } = await this.client.from("trips").delete().eq("id", id);
-
-      if (error) {
-        return { data: null, error: error };
-      }
-
-      return {
-        data: null,
-        error: null,
-      };
+      const res = await fetch(`${this.baseUrl}/${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok) return { data: null, error: json.error };
+      return { data: null, error: null };
     } catch (error: any) {
       return { data: null, error };
     }
   };
 }
 
-// Singleton pattern
 const tripService = new TripService();
 
 export default tripService;
