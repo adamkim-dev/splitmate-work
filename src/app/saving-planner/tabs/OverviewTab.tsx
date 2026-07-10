@@ -55,7 +55,8 @@ export default function OverviewTab({
   const recommendedX = Math.max(0, allowance);
   const budgetX = dailyBudgetX ?? recommendedX;
   // Tiết kiệm dự kiến = Saving Plan + phần dư nếu chi tiêu < allowance
-  const projectedSavings = savingPlanMonthly + Math.max(0, (allowance - budgetX) * cycleDays);
+  const projectedSavings =
+    savingPlanMonthly + Math.max(0, (allowance - budgetX) * cycleDays);
 
   return (
     <div className="space-y-6">
@@ -100,23 +101,23 @@ export default function OverviewTab({
 
       {/* Điều khiển ngân sách và hiển thị tiết kiệm dự kiến */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">
-          Ngân sách mỗi ngày (X) & Tiết kiệm dự kiến
-        </h3>
+        <h3 className="text-lg font-semibold mb-4">Budget Control ($/day)</h3>
         <div className="flex items-center gap-4">
           <input
             type="number"
-            placeholder="Nhập X $/ngày"
+            placeholder="Enter your daily budget ($/day)"
             className="w-60 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={budgetX || 0}
+            value={budgetX.toFixed(2) || 0}
             onChange={(e) => {
               const v = e.target.value;
               const num = v ? parseFloat(v) : 0;
-              setDailyBudgetX(Number.isFinite(num) ? Math.max(0, num) : 0);
+              setDailyBudgetX(
+                Number.isFinite(num) ? Number(Math.max(0, num).toFixed(2)) : 0
+              );
             }}
           />
           <div className="text-sm text-gray-600">
-            Gợi ý hiện tại: ${Utility.formatMoney(recommendedX)}/ngày
+            Current Recommendation: ${Utility.formatMoney(recommendedX)}/day
           </div>
         </div>
 

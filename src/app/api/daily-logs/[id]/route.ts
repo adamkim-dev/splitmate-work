@@ -4,10 +4,10 @@ import { CreateDailySpendingLogPayload } from '@/app/models';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const response = await dailySpendingLogService.fetchDailySpendingLogById(id);
 
@@ -36,10 +36,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: Partial<CreateDailySpendingLogPayload> = await request.json();
 
     // Validate amount if provided
@@ -81,10 +81,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const response = await dailySpendingLogService.deleteDailySpendingLog(id);
 

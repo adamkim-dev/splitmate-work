@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SplitSBClient } from "@/app/utils/supabase/SplitSBClient";
 
-class UsersClient extends SplitSBClient {}
+class UsersClient extends SplitSBClient {
+  updatePayday = (userId: string, payday: number) => {
+    return this.client.from("users").update({ payday }).eq("id", userId);
+  };
+}
 const client = new UsersClient();
 
 export async function PATCH(request: NextRequest) {
@@ -26,10 +30,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { error } = await client.client
-      .from("users")
-      .update({ payday })
-      .eq("id", userId);
+    const { error } = await client.updatePayday(userId, payday);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

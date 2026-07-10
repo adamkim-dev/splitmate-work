@@ -16,17 +16,14 @@ export default function CreateTrip() {
   const [tripDate, setTripDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // State cho modal thêm user mới
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserPhone, setNewUserPhone] = useState("");
   const [isAddingUser, setIsAddingUser] = useState(false);
 
-  // Get users from custom hook
-  const { data: reduxUsers, isLoading: isLoadingUsers } = useUsers();
+  const { data: reduxUsers } = useUsers();
 
-  // Set users from Redux data
   useEffect(() => {
     if (reduxUsers && reduxUsers.length > 0) {
       setUsers(reduxUsers);
@@ -38,14 +35,12 @@ export default function CreateTrip() {
     setIsLoading(true);
 
     try {
-      // Create participants array from selected users
       const participants = selectedUsers.map((userId) => ({
         userId,
         isPaid: false,
         totalMoneyPerUser: 0,
       }));
 
-      // Create new trip object
       const newTrip = {
         name: tripName,
         date: tripDate,
@@ -55,7 +50,6 @@ export default function CreateTrip() {
         money_per_user: 0,
       } as any;
 
-      // Sử dụng tripService để tạo trip mới
       const response = await tripService.createTrip(newTrip);
 
       if (response.data) {
@@ -90,30 +84,21 @@ export default function CreateTrip() {
     setIsAddingUser(true);
 
     try {
-      // Tạo đối tượng user mới
       const newUser = {
         name: newUserName,
         email: newUserEmail,
         phoneNumber: newUserPhone,
       };
 
-      // Sử dụng Redux action để tạo user mới
       const resultAction = await addUser(newUser);
-      
-      if (resultAction.meta.requestStatus === 'fulfilled') {
+
+      if (resultAction.meta.requestStatus === "fulfilled") {
         const createdUser = resultAction.payload as User;
-
-        // Tự động chọn user mới
         setSelectedUsers((prev) => [...prev, createdUser.id]);
-
-        // Reset form
         setNewUserName("");
         setNewUserEmail("");
         setNewUserPhone("");
         setShowAddUserModal(false);
-
-        // Hiển thị thông báo thành công
-        alert("User added successfully!");
       } else {
         throw new Error("Failed to create user");
       }
@@ -125,7 +110,6 @@ export default function CreateTrip() {
     }
   };
 
-  // Reset form khi đóng modal
   const handleCloseModal = () => {
     setNewUserName("");
     setNewUserEmail("");
@@ -134,24 +118,33 @@ export default function CreateTrip() {
   };
 
   return (
-    <div className="font-sans min-h-screen p-4 sm:p-8 bg-gray-50 text-foreground">
-      <header className="py-4 text-center text-xl font-bold flex items-center justify-between bg-white rounded-lg shadow p-4 mb-6">
-        <Link href="/" className="text-blue-500 hover:text-blue-700 transition">
-          <span>⬅️</span> Back
+    <div className="min-h-screen pb-8">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <Link
+          href="/trips"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all"
+        >
+          <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
         </Link>
-        <span className="text-2xl">Create New Trip</span>
-        <div className="w-8"></div> {/* Spacer for balance */}
-      </header>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Create New Trip</h1>
+          <p className="text-sm text-slate-500">Set up a new trip and invite participants</p>
+        </div>
+      </div>
 
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4 border-b pb-2">
-          Trip Information
-        </h2>
+      {/* Form Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden max-w-3xl">
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+          <h2 className="font-semibold text-slate-900">Trip Information</h2>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">
+              <label className="block text-sm font-medium mb-2 text-slate-700">
                 Trip Name
               </label>
               <input
@@ -159,13 +152,13 @@ export default function CreateTrip() {
                 value={tripName}
                 onChange={(e) => setTripName(e.target.value)}
                 required
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                placeholder="Enter trip name"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none"
+                placeholder="e.g. Weekend in Da Nang"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">
+              <label className="block text-sm font-medium mb-2 text-slate-700">
                 Date
               </label>
               <input
@@ -173,158 +166,168 @@ export default function CreateTrip() {
                 value={tripDate}
                 onChange={(e) => setTripDate(e.target.value)}
                 required
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none"
               />
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-slate-700">
                 Select Participants
               </label>
               <button
                 type="button"
                 onClick={() => setShowAddUserModal(true)}
-                className="text-sm text-blue-500 hover:text-blue-700 transition flex items-center gap-1"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
               >
-                <span>➕ Add New User</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                </svg>
+                Add New User
               </button>
             </div>
 
-            <div className="border rounded-lg p-3 max-h-60 overflow-y-auto bg-gray-50">
-              {users.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {users.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center p-2 hover:bg-gray-100 rounded-lg transition"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`user-${user.id}`}
-                        checked={selectedUsers.includes(user.id)}
-                        onChange={() => toggleUserSelection(user.id)}
-                        className="mr-3 h-5 w-5 text-blue-500 focus:ring-blue-500"
-                      />
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-2">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <label
-                          htmlFor={`user-${user.id}`}
-                          className="cursor-pointer"
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="max-h-64 overflow-y-auto p-3 bg-slate-50">
+                {users.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {users.map((user) => {
+                      const isSelected = selectedUsers.includes(user.id);
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => toggleUserSelection(user.id)}
+                          className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
+                            isSelected
+                              ? "bg-indigo-50 border-2 border-indigo-300 shadow-sm"
+                              : "bg-white border-2 border-transparent hover:bg-white hover:shadow-sm"
+                          }`}
                         >
-                          {user.name}
-                        </label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 p-4 text-center">
-                  Loading users...
-                </p>
-              )}
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                              isSelected ? "bg-indigo-600" : "bg-slate-300"
+                            }`}
+                          >
+                            {isSelected ? (
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                              </svg>
+                            ) : (
+                              user.name.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={`font-medium truncate ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
+                              {user.name}
+                            </div>
+                            <div className="text-xs text-slate-400 truncate">{user.email}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-sm text-slate-400">Loading users...</div>
+                )}
+              </div>
+              <div className="px-4 py-2 bg-white border-t border-slate-100 text-xs text-slate-500">
+                {selectedUsers.length} selected
+              </div>
             </div>
             {selectedUsers.length === 0 && (
-              <p className="text-red-500 text-sm mt-2">
+              <p className="text-rose-500 text-sm mt-2 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
                 Please select at least one participant
               </p>
             )}
           </div>
 
-          <div className="pt-4 flex justify-center">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <Link
+              href="/trips"
+              className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all"
+            >
+              Cancel
+            </Link>
             <button
               type="submit"
-              disabled={
-                isLoading ||
-                !tripName ||
-                !tripDate ||
-                selectedUsers.length === 0
-              }
-              className="px-6 py-3 bg-green-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-green-600 transition flex items-center justify-center gap-2 shadow-sm"
+              disabled={isLoading || !tripName || !tripDate || selectedUsers.length === 0}
+              className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl disabled:bg-slate-200 disabled:text-slate-400 hover:bg-indigo-700 transition-all shadow-sm"
             >
-              <span>✨</span>
               {isLoading ? "Creating..." : "Create Trip"}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Modal thêm user mới */}
+      {/* Add User Modal */}
       {showAddUserModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-800">Add New User</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-slate-900">Add New User</h3>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700 transition"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
               >
-                ❌
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
-                  Name
-                </label>
+                <label className="block text-sm font-medium mb-1.5 text-slate-700">Name</label>
                 <input
                   type="text"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
                   required
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none"
                   placeholder="Enter name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
-                  Email
-                </label>
+                <label className="block text-sm font-medium mb-1.5 text-slate-700">Email</label>
                 <input
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                   required
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none"
                   placeholder="Enter email"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
-                  Phone
-                </label>
+                <label className="block text-sm font-medium mb-1.5 text-slate-700">Phone</label>
                 <input
                   type="tel"
                   value={newUserPhone}
                   onChange={(e) => setNewUserPhone(e.target.value)}
                   required
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none"
                   placeholder="Enter phone number"
                 />
               </div>
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition mr-2"
+                  className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddUser}
-                  disabled={
-                    isAddingUser ||
-                    !newUserName ||
-                    !newUserEmail ||
-                    !newUserPhone
-                  }
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-blue-600 transition flex items-center gap-1"
+                  disabled={isAddingUser || !newUserName || !newUserEmail || !newUserPhone}
+                  className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl disabled:bg-slate-200 disabled:text-slate-400 hover:bg-indigo-700 transition-all shadow-sm"
                 >
                   {isAddingUser ? "Adding..." : "Add User"}
                 </button>
